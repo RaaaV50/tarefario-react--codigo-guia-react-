@@ -1,0 +1,224 @@
+/* ==========================================================================
+   GUIA DE CSS MODERNO PARA REACT
+   ========================================================================== */
+
+/* 1. VARIÁVEIS GLOBAIS (Design Tokens)
+   Defina suas cores e tamanhos principais aqui para mudar o tema com facilidade. */
+:root {
+  --primary: #2563eb;
+  /* Azul destaque */
+  --primary-hover: #1d4ed8;
+  /* Azul escuro (hover) */
+  --danger: #ef4444;
+  /* Vermelho excluir */
+  --danger-hover: #dc2626;
+  /* Vermelho escuro (hover) */
+  --background: ;
+  /* Fundo da tela */
+  --surface: #ffffff;
+  /* Fundo dos cartões/containers */
+  --text-main: #0f172a;
+  /* Cor do texto principal */
+  --text-muted: #64748b;
+  /* Cor de legendas/textos secundários */
+  --border: #e2e8f0;
+  /* Bordas suaves */
+  --radius: 8px;
+  /* Arredondamento padrão */
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --transition: all 0.2s ease-in-out;
+}
+
+/* 2. RESET E TIPOGRAFIA BÁSICA */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--background);
+  color: var(--text-main);
+  line-height: 1.5;
+  display: flex;
+  justify-content: center;
+  padding: 40px 16px;
+
+}
+
+/* 3. CONTAINER PRINCIPAL (Card centralizado) */
+.card-container {
+  background-color: var(--surface);
+  width: 100%;
+  max-width: 460px;
+
+  /* Garante a centralização horizontal */
+  margin-left: auto;
+  margin-right: auto;
+
+  padding: 24px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+}
+
+.card-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: var(--text-main);
+}
+
+/* 4. FORMULÁRIO E INPUTS */
+.form-group {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.input-field {
+  flex: 1;
+  padding: 10px 14px;
+  font-size: 0.95rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  background-color: var(--surface);
+  color: var(--text-main);
+  outline: none;
+  transition: var(--transition);
+}
+
+/* Efeito ao focar no campo (muito importante para boa UX) */
+.input-field:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.input-field::placeholder {
+  color: var(--text-muted);
+}
+
+/* 5. BOTÕES */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: var(--radius);
+  border: none;
+  cursor: pointer;
+  transition: var(--transition);
+  user-select: none;
+}
+
+/* Botão Primário (Ação principal / Adicionar) */
+.btn-primary {
+  background-color: var(--primary);
+  color: #ffffff;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-hover);
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
+  /* Efeito tátil de clique */
+}
+
+/* Botão de Perigo (Excluir / Deletar) */
+.btn-danger {
+  background-color: transparent;
+  color: var(--danger);
+  padding: 6px 10px;
+  font-size: 0.8rem;
+  border: 1px solid transparent;
+}
+
+.btn-danger:hover {
+  background-color: #fee2e2;
+  color: var(--danger-hover);
+}
+
+.btn-danger:active {
+  transform: scale(0.96);
+}
+
+/* Botões de Filtro / Abas */
+.filter-group {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.btn-filter {
+  background-color: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  border-radius: 20px;
+  /* Estilo pílula */
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-filter:hover {
+  background-color: #f1f5f9;
+  color: var(--text-main);
+}
+
+/* Classe ativa aplicada dinamicamente no React: className={filtro === 'todas' ? 'active' : ''} */
+.btn-filter.active {
+  background-color: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
+}
+
+/* 6. LISTAS E ITENS */
+.list-container {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  background-color: #fafafa;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: var(--transition);
+}
+
+.list-item:hover {
+  background-color: #f1f5f9;
+}
+
+/* Texto da tarefa */
+.item-text {
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: var(--transition);
+}
+
+/* Modificador de concluído (tarefa riscada) */
+.item-text.completed {
+  text-decoration: line-through;
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+
+/* Feedback de lista vazia */
+.empty-state {
+  text-align: center;
+  color: var(--text-muted);
+  font-style: italic;
+  padding: 24px 0;
+}
