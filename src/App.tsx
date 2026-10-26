@@ -1,188 +1,323 @@
-/**
- * ============================================================================
- * GUIA DE BOLSO REACT: CONCEITOS, SINTAXE E PADRÕES ESSENCIAIS
- * ============================================================================
- * 
- * 1. useState:
- *    - Cria a "memória reativa" da tela.
- *    - Sintaxe: const [valor, setValor] = useState(valorInicial);
- *    - NUNCA altere o valor diretamente (ex: valor = 10 NÃO FUNCIONA). Use sempre setValor(10).
- * 
- * 2. Imutabilidade (A Regra de Ouro):
- *    - Adicionar em lista:   [...listaAntiga, novoItem]
- *    - Remover da lista:     listaAntiga.filter(item => item.id !== idRemovido)
- *    - Modificar um item:    listaAntiga.map(item => item.id === idAlvo ? { ...item, modificado: true } : item)
- * 
- * 3. useEffect (Efeitos Colaterais):
- *    - Sincroniza o React com coisas externas (localStorage, APIs, temporizadores).
- *    - Com [dependencia]: roda na montagem e toda vez que essa variável mudar.
- *    - Com []: roda APENAS uma vez quando o componente é carregado.
- *    - Sem array: roda a cada renderização (quase nunca usado).
- * 
- * 4. Estado Derivado:
- *    - Se um valor pode ser calculado a partir de um estado já existente, NUNCA crie outro useState.
- *    - Apenas crie uma constante comum antes do return (ex: tarefasPendentes abaixo).
- * ============================================================================
- */
-
 import { useState, useEffect } from 'react';
 import './App.css';
 
-export default function CodigoGuiaReact() {
-  // --------------------------------------------------------------------------
-  // 1. DECLARAÇÃO DE ESTADOS (useState)
-  // --------------------------------------------------------------------------
-
-  // Estado simples: string para controlar input
-  const [textoInput, setTextoInput] = useState('');
-
-  // Estado com função inicializadora (Lazy Initialization):
-  // Usado quando a leitura inicial é pesada (ex: ler o localStorage).
-  const [listaTarefas, setListaTarefas] = useState(() => {
+/**
+ * CUSTOM HOOK: useLocalStorage
+ * Abstrai a lógica de sincronização com o localStorage em apenas uma linha.
+ * Funciona exatamente como um useState comum, mas persiste os dados.
+ */
+function useLocalStorage(chave, valorInicial) {
+  const [valor, setValor] = useState(() => {
     try {
-      const dadosSalvos = localStorage.getItem('minhas_tarefas');
-      return dadosSalvos ? JSON.parse(dadosSalvos) : [];
-    } catch {
-      return [];
+      const item = localStorage.getItem(chave);
+      return item ? JSON.parse(item) : valorInicial;
+    } catch (erro) {
+      console.error(`Erro ao carregar chave "${chave}":`, erro);
+      return valorInicial;
     }
   });
 
-  // Estado para controlar a interface (qual aba/filtro está ativo)
-  const [filtro, setFiltro] = useState('todas'); // 'todas' | 'pendentes' | 'concluidas'
-
-  // --------------------------------------------------------------------------
-  // 2. EFEITOS COLATERAIS (useEffect)
-  // --------------------------------------------------------------------------
-
-  // Salva no localStorage sempre que 'listaTarefas' sofrer qualquer modificação
   useEffect(() => {
-    localStorage.setItem('minhas_tarefas', JSON.stringify(listaTarefas));
-  }, [listaTarefas]); // <-- Array de dependências: gatilho de execução
+    try {
+      localStorage.setItem(chave, JSON.stringify(valor));
+    } catch (erro) {
+      console.error(`Erro ao salvar chave "${chave}":`, erro);
+    }
+  }, [chave, valor]);
+
+  return [valor, setValor];
+}
+
+export default function App() {
+  // 1. Estados da Aplicação
+  const [listaTarefas, setListaTarefas] = useLocalStorage('minhas_tarefas_v2', []);
+  const [textoInput, setTextoInput] = useState('');
+  const [categoriaInput, setCategoriaInput] = useState('Geral');
+  const [prioridadeInput, setPrioridadeInput] = useState('Média');
+
+  // Estados de Interface e Filtros
+  const [filtroStatus, setFiltroStatus] = useState('todas'); // 'todas' | 'pendentes' | 'concluidas'
+  const [busca, setBusca] = useState('');
+
+  // Estados para Edição Inline (No próprio item)
+  const [idEmEdicao, setIdEmEdicao] = useState(null);
+  const [textoEmEdicao, setTextoEmEdicao] = useState('');
 
   // --------------------------------------------------------------------------
-  // 3. FUNÇÕES MANIPULADORAS (Handlers de Ações / CRUD)
+  // 2. Operações CRUD
   // --------------------------------------------------------------------------
 
-  // CREATE (Adicionar)
-  function adicionarItem(e) {
-    e.preventDefault(); // Impede o recarregamento padrão da página caso use <form>
+  // CREATE: Adicionar Tarefa
+  function adicionarTarefa(e) {
+    e.preventDefault();
     if (!textoInput.trim()) return;
 
-    // Criamos o novo objeto (como uma struct em C)
-    const novoItem = {
-      id: Date.now(), // ID numérico único baseado no milissegundo atual
-      texto: textoInput,
+    const novaTarefa = {
+      id: Date.now(),
+      texto: textoInput.trim(),
       concluida: false,
+      categoria: categoriaInput,
+      prioridade: prioridadeInput,
     };
 
-    // Imutabilidade: espalha o array antigo e insere o novo no fim
-    setListaTarefas([...listaTarefas, novoItem]);
-    setTextoInput(''); // Limpa o input
+    setListaTarefas([...listaTarefas, novaTarefa]);
+    setTextoInput('');
   }
 
-  // UPDATE (Atualizar status/inverter booleano)
-  function alternarConclusao(idAlvo) {
-    // .map() percorre todos os itens e retorna uma lista nova
-    const listaAtualizada = listaTarefas.map((tarefa) => {
-      if (tarefa.id === idAlvo) {
-        // Copia as propriedades antigas com {...tarefa} e sobrescreve 'concluida'
-        return { ...tarefa, concluida: !tarefa.concluida };
-      }
-      return tarefa; // Mantém inalterado
-    });
-
-    setListaTarefas(listaAtualizada);
+  // UPDATE: Alternar status de concluída
+  function alternarConcluida(id) {
+    setListaTarefas(
+      listaTarefas.map((tarefa) =>
+        tarefa.id === id ? { ...tarefa, concluida: !tarefa.concluida } : tarefa
+      )
+    );
   }
 
-  // DELETE (Remover)
-  function removerItem(idAlvo) {
-    // .filter() retorna apenas os itens que passaram no teste lógico
-    const listaFiltrada = listaTarefas.filter((tarefa) => tarefa.id !== idAlvo);
-    setListaTarefas(listaFiltrada);
+  // UPDATE: Iniciar modo de edição
+  function iniciarEdicao(tarefa) {
+    setIdEmEdicao(tarefa.id);
+    setTextoEmEdicao(tarefa.texto);
+  }
+
+  // UPDATE: Salvar o texto editado
+  function salvarEdicao(id) {
+    if (!textoEmEdicao.trim()) return;
+
+    setListaTarefas(
+      listaTarefas.map((tarefa) =>
+        tarefa.id === id ? { ...tarefa, texto: textoEmEdicao.trim() } : tarefa
+      )
+    );
+    setIdEmEdicao(null);
+    setTextoEmEdicao('');
+  }
+
+  // UPDATE: Cancelar edição
+  function cancelarEdicao() {
+    setIdEmEdicao(null);
+    setTextoEmEdicao('');
+  }
+
+  // DELETE: Remover tarefa única
+  function removerTarefa(id) {
+    setListaTarefas(listaTarefas.filter((tarefa) => tarefa.id !== id));
   }
 
   // --------------------------------------------------------------------------
-  // 4. ESTADOS DERIVADOS (Cálculos automáticos sem novo useState)
+  // 3. Ações em Lote (Bulk Actions)
   // --------------------------------------------------------------------------
 
-  // Quantidade de pendentes calculada na hora
+  function limparConcluidas() {
+    setListaTarefas(listaTarefas.filter((t) => !t.concluida));
+  }
+
+  function alternarTodas() {
+    const todasConcluidas = listaTarefas.every((t) => t.concluida);
+    setListaTarefas(
+      listaTarefas.map((t) => ({ ...t, concluida: !todasConcluidas }))
+    );
+  }
+
+  // --------------------------------------------------------------------------
+  // 4. Estados Derivados (Filtros e Cálculos)
+  // --------------------------------------------------------------------------
+
   const totalPendentes = listaTarefas.filter((t) => !t.concluida).length;
 
-  // Filtragem da lista para exibição
   const tarefasExibidas = listaTarefas.filter((tarefa) => {
-    if (filtro === 'pendentes') return !tarefa.concluida;
-    if (filtro === 'concluidas') return tarefa.concluida;
-    return true; // Se for 'todas', exibe tudo
+    // Filtro por Status
+    const bateuStatus =
+      filtroStatus === 'todas'
+        ? true
+        : filtroStatus === 'pendentes'
+          ? !tarefa.concluida
+          : tarefa.concluida;
+
+    // Filtro por Busca de Texto
+    const bateuBusca = tarefa.texto.toLowerCase().includes(busca.toLowerCase());
+
+    return bateuStatus && bateuBusca;
   });
 
   // --------------------------------------------------------------------------
-  // 5. RENDERIZAÇÃO (JSX)
+  // 5. Interface Visual (JSX)
   // --------------------------------------------------------------------------
+
   return (
     <div className="card-container">
-      <h2 className="card-title">Minha Lista de Tarefas</h2>
+      <h2 className="card-title">Minhas Tarefas</h2>
 
-      <form onSubmit={adicionarItem} className="form-group">
+      {/* Formulário com Categoria e Prioridade */}
+      <form onSubmit={adicionarTarefa} className="form-container">
         <input
           type="text"
-          placeholder="O que precisa ser feito?"
+          placeholder="O que você precisa fazer?"
           value={textoInput}
           onChange={(e) => setTextoInput(e.target.value)}
           className="input-field"
         />
-        <button type="submit" className="btn btn-primary">
-          Adicionar
-        </button>
+
+        <div className="form-row">
+          <select
+            value={categoriaInput}
+            onChange={(e) => setCategoriaInput(e.target.value)}
+            className="select-field"
+          >
+            <option value="Geral">Geral</option>
+            <option value="Trabalho">Trabalho</option>
+            <option value="Estudos">Estudos</option>
+            <option value="Pessoal">Pessoal</option>
+          </select>
+
+          <select
+            value={prioridadeInput}
+            onChange={(e) => setPrioridadeInput(e.target.value)}
+            className="select-field"
+          >
+            <option value="Baixa">Prioridade Baixa</option>
+            <option value="Média">Prioridade Média</option>
+            <option value="Alta">Prioridade Alta</option>
+          </select>
+
+          <button type="submit" className="btn btn-primary">
+            Adicionar
+          </button>
+        </div>
       </form>
 
+      {/* Campo de Pesquisa em Tempo Real */}
+      <input
+        type="text"
+        placeholder="Buscar tarefa..."
+        value={busca}
+        onChange={(e) => setBusca(e.target.value)}
+        className="input-field search-input"
+      />
+
+      {/* Barra de Filtros e Ações em Lote */}
       <div className="filter-group">
         <button
           type="button"
-          className={`btn-filter ${filtro === 'todas' ? 'active' : ''}`}
-          onClick={() => setFiltro('todas')}
+          className={`btn-filter ${filtroStatus === 'todas' ? 'active' : ''}`}
+          onClick={() => setFiltroStatus('todas')}
         >
           Todas
         </button>
         <button
           type="button"
-          className={`btn-filter ${filtro === 'pendentes' ? 'active' : ''}`}
-          onClick={() => setFiltro('pendentes')}
+          className={`btn-filter ${filtroStatus === 'pendentes' ? 'active' : ''}`}
+          onClick={() => setFiltroStatus('pendentes')}
         >
           Pendentes
         </button>
         <button
           type="button"
-          className={`btn-filter ${filtro === 'concluidas' ? 'active' : ''}`}
-          onClick={() => setFiltro('concluidas')}
+          className={`btn-filter ${filtroStatus === 'concluidas' ? 'active' : ''}`}
+          onClick={() => setFiltroStatus('concluidas')}
         >
           Concluídas
         </button>
       </div>
 
+      {/* Barra de Status e Ações Rápidas */}
+      <div className="actions-bar">
+        <span>{totalPendentes} restante(s)</span>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button type="button" onClick={alternarTodas} className="btn-text">
+            Marcar/Desmarcar todas
+          </button>
+          <button type="button" onClick={limparConcluidas} className="btn-text">
+            Limpar concluídas
+          </button>
+        </div>
+      </div>
+
+      {/* Lista de Tarefas */}
       <ul className="list-container">
         {tarefasExibidas.length === 0 ? (
           <li className="empty-state">Nenhuma tarefa encontrada.</li>
         ) : (
           tarefasExibidas.map((tarefa) => (
             <li key={tarefa.id} className="list-item">
-              <span
-                onClick={() => alternarConclusao(tarefa.id)}
-                className={`item-text ${tarefa.concluida ? 'completed' : ''}`}
-              >
-                {tarefa.texto}
-              </span>
+              {idEmEdicao === tarefa.id ? (
+                /* Modo de Edição */
+                <div className="edit-container">
+                  <input
+                    type="text"
+                    value={textoEmEdicao}
+                    onChange={(e) => setTextoEmEdicao(e.target.value)}
+                    className="input-field"
+                    autoFocus
+                  />
+                  <div style={{ display: 'flex', gap: '4px' }}>
+                    <button
+                      type="button"
+                      onClick={() => salvarEdicao(tarefa.id)}
+                      className="btn btn-save"
+                    >
+                      Salvar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={cancelarEdicao}
+                      className="btn btn-cancel"
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                /* Modo Normal de Exibição */
+                <>
+                  <div className="item-content">
+                    <input
+                      type="checkbox"
+                      checked={tarefa.concluida}
+                      onChange={() => alternarConcluida(tarefa.id)}
+                      style={{ cursor: 'pointer' }}
+                    />
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <span
+                        onClick={() => alternarConcluida(tarefa.id)}
+                        className={`item-text ${tarefa.concluida ? 'completed' : ''}`}
+                      >
+                        {tarefa.texto}
+                      </span>
+                      <div className="badges-group">
+                        <span className="badge badge-category">
+                          {tarefa.categoria}
+                        </span>
+                        <span className={`badge badge-priority-${tarefa.prioridade.toLowerCase()}`}>
+                          {tarefa.prioridade}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
 
-              <button
-                type="button"
-                onClick={() => removerItem(tarefa.id)}
-                className="btn btn-danger"
-              >
-                Excluir
-              </button>
+                  <div className="item-actions">
+                    <button
+                      type="button"
+                      onClick={() => iniciarEdicao(tarefa)}
+                      className="btn-action edit"
+                      title="Editar"
+                    >
+                      ✏️
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => removerTarefa(tarefa.id)}
+                      className="btn-action delete"
+                      title="Excluir"
+                    >
+                      🗑️
+                    </button>
+                  </div>
+                </>
+              )}
             </li>
           ))
         )}
       </ul>
     </div>
-  )
+  );
 }

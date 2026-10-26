@@ -1,35 +1,19 @@
-/* ==========================================================================
-   GUIA DE CSS MODERNO PARA REACT
-   ========================================================================== */
-
-/* 1. VARIÁVEIS GLOBAIS (Design Tokens)
-   Defina suas cores e tamanhos principais aqui para mudar o tema com facilidade. */
 :root {
   --primary: #2563eb;
-  /* Azul destaque */
   --primary-hover: #1d4ed8;
-  /* Azul escuro (hover) */
   --danger: #ef4444;
-  /* Vermelho excluir */
   --danger-hover: #dc2626;
-  /* Vermelho escuro (hover) */
-  --background: ;
-  /* Fundo da tela */
+  --success: #10b981;
+  --background: #f8fafc;
   --surface: #ffffff;
-  /* Fundo dos cartões/containers */
   --text-main: #0f172a;
-  /* Cor do texto principal */
   --text-muted: #64748b;
-  /* Cor de legendas/textos secundários */
   --border: #e2e8f0;
-  /* Bordas suaves */
   --radius: 8px;
-  /* Arredondamento padrão */
   --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
   --transition: all 0.2s ease-in-out;
 }
 
-/* 2. RESET E TIPOGRAFIA BÁSICA */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -40,23 +24,15 @@ body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background-color: var(--background);
   color: var(--text-main);
-  line-height: 1.5;
-  display: flex;
-  justify-content: center;
-  padding: 40px 16px;
-
+  padding: 30px 16px;
 }
 
-/* 3. CONTAINER PRINCIPAL (Card centralizado) */
+/* Card Centralizado */
 .card-container {
   background-color: var(--surface);
   width: 100%;
-  max-width: 460px;
-
-  /* Garante a centralização horizontal */
-  margin-left: auto;
-  margin-right: auto;
-
+  max-width: 500px;
+  margin: 0 auto;
   padding: 24px;
   border-radius: var(--radius);
   box-shadow: var(--shadow);
@@ -67,118 +43,126 @@ body {
   font-size: 1.5rem;
   font-weight: 700;
   margin-bottom: 20px;
-  color: var(--text-main);
 }
 
-/* 4. FORMULÁRIO E INPUTS */
-.form-group {
+/* Formulário e Controles */
+.form-container {
   display: flex;
-  gap: 8px;
+  flex-direction: column;
+  gap: 10px;
   margin-bottom: 16px;
 }
 
-.input-field {
-  flex: 1;
-  padding: 10px 14px;
-  font-size: 0.95rem;
-  border: 1.5px solid var(--border);
+.form-row {
+  display: flex;
+  gap: 8px;
+}
+
+.input-field,
+.select-field {
+  padding: 9px 12px;
+  font-size: 0.9rem;
+  border: 1px solid var(--border);
   border-radius: var(--radius);
-  background-color: var(--surface);
-  color: var(--text-main);
   outline: none;
+  background: var(--surface);
+  color: var(--text-main);
   transition: var(--transition);
 }
 
-/* Efeito ao focar no campo (muito importante para boa UX) */
-.input-field:focus {
+.input-field:focus,
+.select-field:focus {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
-.input-field::placeholder {
-  color: var(--text-muted);
+.select-field {
+  cursor: pointer;
+  flex: 1;
 }
 
-/* 5. BOTÕES */
+.search-input {
+  width: 100%;
+  margin-bottom: 16px;
+  background-color: #f8fafc;
+}
+
+/* Botões */
 .btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px 16px;
-  font-size: 0.9rem;
+  padding: 8px 14px;
+  font-size: 0.85rem;
   font-weight: 600;
   border-radius: var(--radius);
   border: none;
   cursor: pointer;
   transition: var(--transition);
-  user-select: none;
 }
 
-/* Botão Primário (Ação principal / Adicionar) */
 .btn-primary {
   background-color: var(--primary);
-  color: #ffffff;
+  color: #fff;
 }
 
 .btn-primary:hover {
   background-color: var(--primary-hover);
 }
 
-.btn-primary:active {
-  transform: scale(0.98);
-  /* Efeito tátil de clique */
+.btn-save {
+  background-color: var(--success);
+  color: #fff;
 }
 
-/* Botão de Perigo (Excluir / Deletar) */
-.btn-danger {
-  background-color: transparent;
-  color: var(--danger);
-  padding: 6px 10px;
-  font-size: 0.8rem;
-  border: 1px solid transparent;
+.btn-cancel {
+  background-color: #94a3b8;
+  color: #fff;
 }
 
-.btn-danger:hover {
-  background-color: #fee2e2;
-  color: var(--danger-hover);
-}
-
-.btn-danger:active {
-  transform: scale(0.96);
-}
-
-/* Botões de Filtro / Abas */
+/* Filtros */
 .filter-group {
   display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
+  gap: 6px;
+  margin-bottom: 12px;
 }
 
 .btn-filter {
-  background-color: transparent;
+  background: transparent;
   color: var(--text-muted);
   border: 1px solid var(--border);
-  padding: 6px 12px;
-  font-size: 0.85rem;
+  padding: 5px 12px;
+  font-size: 0.8rem;
   border-radius: 20px;
-  /* Estilo pílula */
   cursor: pointer;
   transition: var(--transition);
 }
 
-.btn-filter:hover {
-  background-color: #f1f5f9;
-  color: var(--text-main);
-}
-
-/* Classe ativa aplicada dinamicamente no React: className={filtro === 'todas' ? 'active' : ''} */
 .btn-filter.active {
-  background-color: var(--primary);
-  color: #ffffff;
+  background: var(--primary);
+  color: #fff;
   border-color: var(--primary);
 }
 
-/* 6. LISTAS E ITENS */
+/* Barra de Ações Rápidas */
+.actions-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.btn-text {
+  background: none;
+  border: none;
+  color: var(--primary);
+  cursor: pointer;
+  font-size: 0.75rem;
+  text-decoration: underline;
+}
+
+/* Lista e Itens */
 .list-container {
   list-style: none;
   display: flex;
@@ -188,37 +172,100 @@ body {
 
 .list-item {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  padding: 12px;
-  background-color: #fafafa;
+  align-items: center;
+  padding: 10px 12px;
+  background-color: #fdfdfd;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   transition: var(--transition);
 }
 
 .list-item:hover {
-  background-color: #f1f5f9;
+  background-color: #f8fafc;
 }
 
-/* Texto da tarefa */
+.item-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .item-text {
   cursor: pointer;
   font-size: 0.95rem;
-  transition: var(--transition);
 }
 
-/* Modificador de concluído (tarefa riscada) */
 .item-text.completed {
   text-decoration: line-through;
   color: var(--text-muted);
-  opacity: 0.6;
 }
 
-/* Feedback de lista vazia */
+/* Badges de Categoria e Prioridade */
+.badges-group {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.badge {
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.badge-category {
+  background-color: #e2e8f0;
+  color: #475569;
+}
+
+.badge-priority-baixa {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.badge-priority-média {
+  background-color: #fef9c3;
+  color: #854d0e;
+}
+
+.badge-priority-alta {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+/* Ações do Item */
+.item-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.btn-action {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 4px;
+  border-radius: 4px;
+  transition: var(--transition);
+}
+
+.btn-action:hover {
+  background-color: #e2e8f0;
+}
+
+/* Edição Inline */
+.edit-container {
+  display: flex;
+  width: 100%;
+  gap: 8px;
+  align-items: center;
+}
+
 .empty-state {
   text-align: center;
   color: var(--text-muted);
   font-style: italic;
-  padding: 24px 0;
+  padding: 20px 0;
 }
