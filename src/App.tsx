@@ -7,7 +7,7 @@ import {
   excluirTarefa,
   alternarTodasTarefas,
   removerConcluidas,
-} from './utils/manipuladoresTarefas';
+} from './utils/gerenciadorLista';
 import { filtrarTarefas, calcularPendentes } from './utils/filtrosTarefas';
 
 import FormularioTarefa from './components/FormularioTarefas';
