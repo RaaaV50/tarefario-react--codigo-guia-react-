@@ -1,5 +1,5 @@
 export function filtrarTarefas(lista, status, busca) {
-    const termo = busca.toLowerCase();
+    const termo = (busca || '').toLowerCase();
 
     return lista.filter((item) => {
         const bateuStatus =

@@ -14,6 +14,16 @@
   --transition: all 0.2s ease-in-out;
 }
 
+/* TEMA ESCURO */
+
+[data-theme="escuro"] {
+  --background: #0f172a;
+  --surface: #1e293b;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --border: #334155;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
